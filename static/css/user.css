@@ -1,0 +1,54 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+.main{
+    height: 96vh;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    
+}
+.navigation{
+    width: 100%;
+    height: 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 50px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+.logo{
+    width: 30%;
+}
+.logo img{
+    width: 300px;
+}
+.nav{
+    width: 20%;
+
+}
+.nav ul{
+    display: flex;
+    justify-content: space-between;
+}
+.nav ul li{
+    list-style: none;
+}
+.nav ul li a{
+    text-decoration: none;
+    color: black;
+    border: solid black 1px;
+    padding: 10px;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+}
+
+.landing{
+    height: 85vh;
+    background: url(../images/ict.jpg);
+    background-size: cover;
+}

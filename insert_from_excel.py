@@ -3,6 +3,7 @@ from db import db
 
 collection = db["attendance"]
 
+#upload excel data
 def insert_data_from_excel(file_path):
     try:
         df = pd.read_excel(file_path)

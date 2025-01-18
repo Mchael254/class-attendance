@@ -1,0 +1,119 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: raleway;
+}
+.main{
+    height: 100vh;
+    display: flex;
+}
+
+.image{
+    width: 50%;
+    background: url(../images/login.png);
+    background-size: cover;
+}
+
+.form{
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.container{
+    width: 60%;
+    height: 65vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+}
+.logo{
+    width: 100%;
+}
+.logo img{
+    width: 350px;
+}
+.signin{
+    width: 100%;
+    color: rgb(49, 47, 47);
+    padding-left: 15px;
+    font-size: 18px;
+
+}
+.please{
+    width: 100%;
+    color: white;
+    text-align: center;
+    background-color: #e10716;
+    font-size: small;
+    padding: 10px 10px;
+    border-radius: 5px;
+}
+.formContainer{
+    height: 20vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+}
+.loginForm{
+    width: 100%;
+    height: 30vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.loginForm input{
+    border: solid #d4d2c8 1px;
+    width: 100%;
+    padding: 10px;
+    margin: 10px;
+    border-radius: 5px;
+    font-size: medium;
+}
+.loginForm input:focus{
+    outline: none;
+    box-shadow:0 0 10px rgb(57, 163, 212);
+ 
+    
+}
+.buttons{
+    border: none;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+
+}
+.buttons button{
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    width: 150px;
+    background: #02953e;
+    color: white;
+    margin:5px 0px;
+    cursor: pointer;
+}
+.buttons button:hover{
+    background: #e10716;
+}
+.back{
+    text-align: center;
+}
+
+.back  a{
+    color: #02953e;
+    text-decoration: none;
+    border-bottom:#d4d2c8 1px solid;
+}
+.back a:hover{
+    color: #e10716;
+}

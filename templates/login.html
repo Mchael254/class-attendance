@@ -1,0 +1,53 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='css/login.css')}}">
+</head>
+<body>
+    <div class="main">
+        <div class="image">
+    
+        </div>
+        <div class="form">
+            <div class="container">
+                <div class="logo">
+                    <img src="{{url_for('static', filename='images/ministry.png')}}" alt="logo">
+    
+                </div>
+                <div class="signin">
+                    <p style="float: left;">Sign in</p>
+    
+                </div>
+                <div class="please">
+                    <p>Please sign in to access this platform</p>
+                </div>
+               
+                <div class="formContainer">
+                    <form action="/login" method="post"  class="loginForm">
+                        <input type="text" name="userEmail" id="userEmail" placeholder="E-mail address">
+                        <input type="password" name="password" id="password" placeholder="Password">
+                    </form>
+    
+                </div>
+                <div class="buttons">
+                    <button class="login" onclick="login()">Signin <span style="font-size: x-small;">>></span></button> Or
+                    <button class="register" style="background-color: #e10716;">Register</button>
+    
+                </div>
+                <div class="back">
+                    <a href="#">Back to Smart Academy</a>
+                </div>
+
+            </div>
+           
+            
+        </div>
+    </div>
+
+    <script src="{{url_for('static', filename='js/login.js')}}"></script>
+    
+</body>
+
+</html>
