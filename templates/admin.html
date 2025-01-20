@@ -1,0 +1,99 @@
+<!-- admin page to upload excel file -->
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{{url_for('static', filename = 'css/admin.css')}}">
+    <script src="{{url_for('static', filename = 'js/admin.js')}}"></script>
+</head>
+
+<body>
+
+    <div class="main">
+        <div class="navbar">
+            <div class="logo">
+                <img src="{{url_for('static', filename = 'images/ministry.png')}}" alt="logo">
+    
+            </div>
+            <div class="nav">
+                <ul>
+                    <li><a href="{{ url_for('userLogin') }}" style="color: green;">Back</a></li>
+                </ul>
+    
+            </div>
+        </div>
+        <div class="dashboard">
+            <div class="navPanel">
+                <button onclick="openUpload(event)">upload file</button>
+                <button onclick="openCitizens(event)">citizens</button>
+                <button onclick="openAttendance(event)">attendance</button>
+                <button onclick="openQualifiers(event)">Qualifiers</button>
+
+            </div>
+            <div class="container">
+                <div class="header">
+                    <h1>Admin</h1>
+                </div>
+                <p>Upload excel file for registered citizens</p>
+                <div class="formContainer">
+                    <!-- Container to display the success message -->
+                    <div id="messageContainer" style="color: green; margin-bottom: 10px;"></div>
+                
+                    <form id="fileForm" method="POST" enctype="multipart/form-data">
+                        <input type="file" name="file" id="file" class="inputfile" required>
+                        <label for="file">Choose a file</label><br>
+                        <button type="button" class="upload" onclick="uploadFile(event)">Upload</button>
+                    </form>
+                </div>
+                <a href="">Back</a>
+               
+    
+            </div>
+    
+
+        </div>
+     
+       
+        
+       
+    </div>
+
+    <script>
+        // Function to open the upload file form
+        
+
+
+
+        async function uploadFile() {
+            const form = document.getElementById("fileForm");
+            const formData = new FormData(form);
+            const messageContainer = document.getElementById("messageContainer");
+    
+            try {
+                const response = await fetch("/uploadFile", {
+                    method: "POST",
+                    body: formData,
+                });
+    
+                const result = await response.json();
+    
+                if (response.ok) {
+                    messageContainer.style.color = "green";
+                    messageContainer.textContent = result.message;
+                } else {
+                    messageContainer.style.color = "red";
+                    messageContainer.textContent = result.message;
+                }
+            } catch (error) {
+                messageContainer.style.color = "red";
+                messageContainer.textContent = "An error occurred while uploading the file.";
+            }
+        }
+    </script>
+
+
+</body>
+
+</html>

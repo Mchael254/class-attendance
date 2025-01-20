@@ -25,19 +25,19 @@
                 </div>
                
                 <div class="formContainer">
-                    <form action="/login" method="post"  class="loginForm">
+                    <form id="loginForm" method="POST"  class="loginForm">
                         <input type="text" name="userEmail" id="userEmail" placeholder="E-mail address">
                         <input type="password" name="password" id="password" placeholder="Password">
                     </form>
     
                 </div>
                 <div class="buttons">
-                    <button class="login" onclick="login()">Signin <span style="font-size: x-small;">>></span></button> Or
+                    <button class="login" onclick="login(event)">Signin <span style="font-size: x-small;">>></span></button> Or
                     <button class="register" style="background-color: #e10716;">Register</button>
     
                 </div>
                 <div class="back">
-                    <a href="#">Back to Smart Academy</a>
+                    <a href="{{ url_for('welcome_page') }}">Back to Smart Academy</a>
                 </div>
 
             </div>

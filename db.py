@@ -1,12 +1,16 @@
-from pymongo import MongoClient
-mongo_url = "mongodb+srv://venum:Michael123.100#@cluster0.lgn11.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-client = MongoClient(mongo_url)
+
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
+
+uri = "mongodb+srv://venum:michael123@cluster0.lgn11.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+
+# Create a new client and connect to the server
+client = MongoClient(uri, server_api=ServerApi('1'))
 db = client["venum"]
 
+# Send a ping to confirm a successful connection
 try:
-    # Initialize the MongoDB client
-    client = MongoClient(mongo_url)
-    print("Connection Successful!")
-    
+    client = MongoClient(uri)
+    print("connected to MongoDB!")
 except Exception as e:
-    print("Failed to connect to MongoDB:", e)
+    print(e)

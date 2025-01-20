@@ -1,0 +1,102 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: raleway;
+}
+.main{
+    border:solid red 1px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+   
+}
+.navbar{
+    height: 13vh;
+    width: 100vw;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+
+}
+.logo {
+    border:solid blue 1px;
+    height: 100%;
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.logo img{
+    width: 300px;
+}
+
+.dashboard{
+    border:solid yellow 1px;
+    height: 90vh;
+    display: flex;
+    justify-content: space-around;
+    width: 98vw;
+    padding: 20px;
+   
+}
+.navPanel{
+    border:solid blue 1px;
+    height: 50vh;
+    width: 20vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+}
+.navPanel button{
+    width: 80%;
+    height: 50px;
+    background-color:#d4d2c8;
+    color: black;
+    font-size: 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.container{
+    border:solid red 1px;
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+    height: 80vh;
+    width: 70vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.formContainer{
+    border:solid #d4d2c8 1px;
+    border-radius: 5px;
+    height: 50vh;
+    width: 30vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+   
+}
+.formContainer button{
+    width: 80%;
+    height: 50px;
+    background-color:green;
+    color: white;
+    font-size: 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 30px;
+}
+a{
+    color: green;
+    text-decoration: none;
+    border-bottom:solid 1px #d4d2c8;
+}
