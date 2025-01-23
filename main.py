@@ -15,7 +15,7 @@ collection = db["attendance"]
 
 @app.route('/')
 def attendance():
-    return 'attendance system running'
+    return 'attendance system up'
 
 @app.route("/admin_page",methods = ["GET"])
 def admin_page():
@@ -25,6 +25,7 @@ def admin_page():
 @app.route("/createCollection", methods=["POST"])
 def create_collection():
     data = request.get_json()
+    print(data)
     collection_name = data.get("name")
     
     if not collection_name:
@@ -52,6 +53,8 @@ def get_collections():
 def get_collection_data(collection_name):
     try:
         collection = db[collection_name]
+        if collection_name not in db.list_collection_names():
+            return jsonify({"message": f"Collection '{collection_name}' not found"}), 404
         data = list(collection.find())  
 
         for doc in data:
@@ -61,6 +64,21 @@ def get_collection_data(collection_name):
     except Exception as e:
         return jsonify({"message": f"Failed to fetch data from collection '{collection_name}': {str(e)}"}), 500
 
+#delete collection
+@app.route("/deleteCollection", methods=["DELETE"])
+def delete_collection():
+    try:
+        collection_name = request.args.get("name")
+        print(collection_name)
+        #check if collection exists
+        if collection_name not in db.list_collection_names():
+            return jsonify({"message": f"Collection '{collection_name}' not found"}), 404
+        
+        db.drop_collection(collection_name)
+        
+        return jsonify({"message": f"Collection '{collection_name}' deleted successfully"}), 200
+    except Exception as e:
+        return jsonify({"message": f"Failed to delete collection '{collection_name}': {str(e)}"}), 500
 
 #upload files
 @app.route("/uploadFiles", methods=["POST"])
@@ -91,6 +109,7 @@ def upload_excel_files():
                     if len(excel_file.sheet_names) == 1:
                         df = excel_file.parse(sheet_name=0)  
                         # df = df.dropna() 
+                        df = df.dropna(how='all')
                         df = df.fillna('***') 
                         df = df.drop_duplicates(subset=["Email"], keep="first")
                         merged_data.append(df)
@@ -102,6 +121,7 @@ def upload_excel_files():
                             try:
                                 df = excel_file.parse(sheet_name=sheet)  
                                 # df = df.dropna() 
+                                df = df.dropna(how='all')
                                 df = df.fillna('***') 
                                 if "Email" in df.columns:  
                                     df = df.drop_duplicates(subset=["Email"], keep="first")
@@ -116,6 +136,8 @@ def upload_excel_files():
                         all_data["days"] = all_data.groupby("Email")["Email"].transform("count")
                         all_data = all_data.drop_duplicates(subset=["Email"], keep="first")
                         merged_data.append(all_data)
+                        
+                        #column name sorted on the frontend
 
             finally:
                 if os.path.exists(filepath):
@@ -131,95 +153,6 @@ def upload_excel_files():
     except Exception as e:
         return jsonify({"message": f"Failed to upload files: {str(e)}"}), 500
 
-
-
-
-#get all attendance
-@app.route("/get-attendance", methods=["GET"])
-def get_attendance():
-    try:
-        data = collection.find()
-        if data:
-            data = list(data)
-            for user in data:
-                user["_id"] = str(user["_id"])
-            return jsonify(data), 200
-        else:
-            return jsonify({"message": "No data found"}), 404
-    except Exception as e:
-        return jsonify({"message": f"An error occurred: {str(e)}"}), 500
-
-
-#update attendance
-@app.route('/update-attendance', methods=['PUT'])
-def update_attendance():
-    try:
-        # Extract data from the request
-        data = request.get_json()
-        
-        if not data or 'Email' not in data:
-            return jsonify({"message": "Missing required fields"}), 400
-        Email = data.get("Email")
-        day1 = data.get("day1")
-        day2 = data.get("day2")
-        day3 = data.get("day3")
-        days = data.get("days")
-        
-
-        # Find the user in the database by email
-        user = collection.find_one({"Email": Email})
-
-        if not user:
-            return jsonify({"message": "User not found"}), 404
-        
-    
-        result = collection.update_one(
-            {"Email": Email},
-            {"$set": {"day1": day1, "day2": day2, "day3": day3, "days": days}}
-        )
-        
-        if result.modified_count == 1:
-            return jsonify({"message": "Attendance updated successfully"}), 200
-        else:
-            return jsonify({"message": "Failed to update attendance"}), 500
-     
-
-    except Exception as e:
-        # Log the exception for debugging
-        print(f"Error occurred: {str(e)}")
-        return jsonify({"message": f"An error occurred: {str(e)}"}), 500
-   
-    
-
-
-#user page  
-@app.route("/user")
-def welcome_page():
-    return render_template("user.html")
-
-#login user login page
-@app.route("/userLogin", methods = ["GET"])
-def userLogin():
-    return render_template("login.html")
-    
-
-#user login
-@app.route("/login", methods = ["GET", "POST"])
-def user_login():
-   try:
-       data = request.get_json()
-       Email = data.get("Email")
-       #check if email exists in the collection
-       user = collection.find_one({"Email": Email})
-       if user: 
-           user["_id"] = str(user["_id"])
-           return jsonify({"message": "User does exist", "details": user}), 200
-             
-       else:
-         return jsonify({"message": "Email not found"}), 404
- 
-   except Exception as e:
-      return jsonify({"message": "An error occurred", "error": str(e)}), 500
 
 
 if __name__ == '__main__':
