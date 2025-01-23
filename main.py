@@ -15,7 +15,7 @@ collection = db["attendance"]
 
 @app.route('/')
 def attendance():
-    return render_template("admin.html")
+    return 'attendance system up'
 
 @app.route("/admin_page",methods = ["GET"])
 def admin_page():
