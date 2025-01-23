@@ -5,6 +5,8 @@ from flask import Flask,jsonify,request,render_template, redirect,url_for
 from db import db
 import pandas as pd
 from flask_cors import CORS
+import os
+import tempfile
 
 app = Flask(__name__)
 CORS(app)
@@ -43,6 +45,7 @@ def get_collections():
         return jsonify(collections), 200
     except Exception as e:
         return jsonify({"message": f"Failed to fetch collections: {str(e)}"}), 500
+  
     
 #get collection data 
 @app.route("/getCollectionData/<collection_name>", methods=["GET"])
@@ -58,6 +61,7 @@ def get_collection_data(collection_name):
     except Exception as e:
         return jsonify({"message": f"Failed to fetch data from collection '{collection_name}': {str(e)}"}), 500
 
+
 #upload files
 @app.route("/uploadFiles", methods=["POST"])
 def upload_excel_files():
@@ -71,23 +75,63 @@ def upload_excel_files():
         return jsonify({"message": "No files or collection name provided"}), 400
 
     try:
+        merged_data = []
         for file in files:
             filename = secure_filename(file.filename)
-            file.save(filename)
 
-            df = pd.read_excel(filename)
-            df['days'] = 0
-            df['day1'] = 0
-            df['day2'] = 0
-            df['day3'] = 0
-            print(df.head())
+            # save in  a temporary file 
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx') as tmp_file:
+                filepath = tmp_file.name
+                file.save(filepath)
 
-            data_to_insert = df.to_dict(orient="records")
-            db[collection_name].insert_many(data_to_insert)
+            # Load the Excel file 
+            try:
+                with pd.ExcelFile(filepath) as excel_file:
+                    # Scenario 1: Single sheet
+                    if len(excel_file.sheet_names) == 1:
+                        df = excel_file.parse(sheet_name=0)  
+                        # df = df.dropna() 
+                        df = df.fillna('***') 
+                        df = df.drop_duplicates(subset=["Email"], keep="first")
+                        merged_data.append(df)
+
+                    # Scenario 2: Multiple sheets
+                    else:
+                        sheet_data = []
+                        for sheet in excel_file.sheet_names:
+                            try:
+                                df = excel_file.parse(sheet_name=sheet)  
+                                # df = df.dropna() 
+                                df = df.fillna('***') 
+                                if "Email" in df.columns:  
+                                    df = df.drop_duplicates(subset=["Email"], keep="first")
+                                    sheet_data.append(df)
+                                else:
+                                    return jsonify({"message": f"'Email' column missing in sheet '{sheet}'"}), 400
+                            except Exception as sheet_error:
+                                return jsonify({"message": f"Error processing sheet '{sheet}': {sheet_error}"}), 500
+
+                        # Combine all sheets into one DataFrame
+                        all_data = pd.concat(sheet_data, ignore_index=True)
+                        all_data["days"] = all_data.groupby("Email")["Email"].transform("count")
+                        all_data = all_data.drop_duplicates(subset=["Email"], keep="first")
+                        merged_data.append(all_data)
+
+            finally:
+                if os.path.exists(filepath):
+                    os.remove(filepath)
+
+        # Merge all data into a single DataFrame
+        final_data = pd.concat(merged_data, ignore_index=True)
+        data_to_insert = final_data.to_dict(orient="records")
+        db[collection_name].insert_many(data_to_insert)
 
         return jsonify({"message": "All files uploaded successfully"}), 200
+
     except Exception as e:
         return jsonify({"message": f"Failed to upload files: {str(e)}"}), 500
+
+
 
 
 #get all attendance
@@ -104,7 +148,6 @@ def get_attendance():
             return jsonify({"message": "No data found"}), 404
     except Exception as e:
         return jsonify({"message": f"An error occurred: {str(e)}"}), 500
-
 
 
 #update attendance
