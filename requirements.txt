@@ -1,0 +1,8 @@
+Flask==2.3.2
+pandas==2.0.3
+pymongo==4.4.1 
+Werkzeug==2.3.7
+unittest==1.4.4
+Flask-CORS==4.0.1
+bson==3.14.0 
+tempfile==3.11.1
