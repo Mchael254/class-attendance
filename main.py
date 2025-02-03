@@ -81,6 +81,86 @@ def delete_collection():
         return jsonify({"message": f"Failed to delete collection '{collection_name}': {str(e)}"}), 500
 
 #upload files
+# @app.route("/uploadFiles", methods=["POST"])
+# def upload_excel_files():
+#     if "files" not in request.files or "collection" not in request.form:
+#         return jsonify({"message": "Files and collection name are required"}), 400
+
+#     files = request.files.getlist("files")
+#     collection_name = request.form["collection"]
+
+#     if len(files) == 0 or not collection_name:
+#         return jsonify({"message": "No files or collection name provided"}), 400
+
+#     try:
+#         merged_data = []
+#         for file in files:
+#             filename = secure_filename(file.filename)
+
+#             # save in  a temporary file 
+#             with tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx') as tmp_file:
+#                 filepath = tmp_file.name
+#                 file.save(filepath)
+
+#             # Load the Excel file 
+#             try:
+#                 with pd.ExcelFile(filepath) as excel_file:
+#                     # Scenario 1: Single sheet
+#                     if len(excel_file.sheet_names) == 1:
+#                         df = excel_file.parse(sheet_name=0)  
+#                         # df = df.dropna() 
+#                         df = df.dropna(how='all')
+#                         df = df.fillna('***') 
+#                         if "Email" not in df.columns:
+#                             return jsonify({"message": f"'Email' column missing in file '{filename}'"}), 400
+
+#                         df = df.drop_duplicates(subset=["Email"], keep="first")
+#                         merged_data.append(df)
+
+#                     # Scenario 2: Multiple sheets
+#                     else:
+#                         sheet = None
+#                         sheet_data = []
+#                         for sheet in excel_file.sheet_names:
+#                             try:
+#                                 df = excel_file.parse(sheet_name=sheet)  
+#                                 print("Columns in current DataFrame:", df.columns.tolist())
+#                                 # df = df.dropna() 
+#                                 df = df.dropna(how='all')
+#                                 df = df.fillna('***') 
+#                                 if "Email" not in df.columns:
+#                                     return jsonify({"message": f"'Email' column missing in file '{filename}', sheet '{sheet}'"}), 400
+
+#                                 if "Email" in df.columns:  
+#                                     df = df.drop_duplicates(subset=["Email"], keep="first")
+#                                     sheet_data.append(df)
+#                                 else:
+#                                     return jsonify({"message": f"'Email' column missing in sheet '{sheet}'"}), 400
+#                             except Exception as sheet_error:
+#                                 return jsonify({"message": f"Error processing sheet '{sheet}': {sheet_error}"}), 500
+
+#                         # Combine all sheets into one DataFrame
+#                         all_data = pd.concat(sheet_data, ignore_index=True)
+#                         all_data["days"] = all_data.groupby("Email")["Email"].transform("count")
+#                         all_data = all_data.drop_duplicates(subset=["Email"], keep="first")
+#                         merged_data.append(all_data)
+                        
+#                         #column name sorted on the frontend
+
+#             finally:
+#                 if os.path.exists(filepath):
+#                     os.remove(filepath)
+
+#         # Merge all data into a single DataFrame
+#         final_data = pd.concat(merged_data, ignore_index=True)
+#         data_to_insert = final_data.to_dict(orient="records")
+#         db[collection_name].insert_many(data_to_insert)
+
+#         return jsonify({"message": "All files uploaded successfully"}), 200
+
+#     except Exception as e:
+#         return jsonify({"message": f"Failed to upload files: {str(e)}"}), 500
+
 @app.route("/uploadFiles", methods=["POST"])
 def upload_excel_files():
     if "files" not in request.files or "collection" not in request.form:
@@ -94,59 +174,86 @@ def upload_excel_files():
 
     try:
         merged_data = []
+        
+        # First, handle single sheet files
         for file in files:
             filename = secure_filename(file.filename)
 
-            # save in  a temporary file 
+            # Save in a temporary file
             with tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx') as tmp_file:
                 filepath = tmp_file.name
                 file.save(filepath)
 
-            # Load the Excel file 
             try:
                 with pd.ExcelFile(filepath) as excel_file:
-                    # Scenario 1: Single sheet
+                    sheet_data = []
+
+                    # single sheet files 
                     if len(excel_file.sheet_names) == 1:
-                        df = excel_file.parse(sheet_name=0)  
-                        # df = df.dropna() 
-                        df = df.dropna(how='all')
-                        df = df.fillna('***') 
+                        sheet = excel_file.sheet_names[0]
+                        df = excel_file.parse(sheet_name=sheet, dtype=str)
+
+                        # Normalize column names
+                        df.columns = (
+                            df.columns.str.replace(r"\s+", " ", regex=True)
+                            .str.strip()
+                            .str.replace("\ufeff", "")
+                        )
+
+                        print(f"Columns in '{filename}', sheet '{sheet}':", df.columns.tolist())
+
+                        df = df.dropna(how="all").fillna("***")
+
+                        if "Email" not in df.columns:
+                            return jsonify({"message": f"'Email' column missing in file '{filename}', sheet '{sheet}'"}), 400
+
+                        df["days"] = df["Email"].map(df["Email"].value_counts())
+
                         df = df.drop_duplicates(subset=["Email"], keep="first")
+
                         merged_data.append(df)
 
-                    # Scenario 2: Multiple sheets
-                    else:
-                        sheet_data = []
+                    # multiple sheets 
+                    elif len(excel_file.sheet_names) > 1:
                         for sheet in excel_file.sheet_names:
-                            try:
-                                df = excel_file.parse(sheet_name=sheet)  
-                                # df = df.dropna() 
-                                df = df.dropna(how='all')
-                                df = df.fillna('***') 
-                                if "Email" in df.columns:  
-                                    df = df.drop_duplicates(subset=["Email"], keep="first")
-                                    sheet_data.append(df)
-                                else:
-                                    return jsonify({"message": f"'Email' column missing in sheet '{sheet}'"}), 400
-                            except Exception as sheet_error:
-                                return jsonify({"message": f"Error processing sheet '{sheet}': {sheet_error}"}), 500
+                            df = excel_file.parse(sheet_name=sheet, dtype=str)
 
-                        # Combine all sheets into one DataFrame
-                        all_data = pd.concat(sheet_data, ignore_index=True)
-                        all_data["days"] = all_data.groupby("Email")["Email"].transform("count")
-                        all_data = all_data.drop_duplicates(subset=["Email"], keep="first")
-                        merged_data.append(all_data)
-                        
-                        #column name sorted on the frontend
+                            # Normalize column names
+                            df.columns = (
+                                df.columns.str.replace(r"\s+", " ", regex=True)
+                                .str.strip()
+                                .str.replace("\ufeff", "")
+                            )
+
+                            print(f"Columns in '{filename}', sheet '{sheet}':", df.columns.tolist())
+
+                            df = df.dropna(how="all").fillna("***")
+
+                            if "Email" not in df.columns:
+                                return jsonify({"message": f"'Email' column missing in file '{filename}', sheet '{sheet}'"}), 400
+
+                            # Remove duplicates within the sheet
+                            df = df.drop_duplicates(subset=["Email"], keep="first")
+
+                            sheet_data.append(df)
 
             finally:
                 if os.path.exists(filepath):
                     os.remove(filepath)
 
+        if sheet_data:
+            all_data = pd.concat(sheet_data, ignore_index=True)
+            all_data["days"] = all_data["Email"].map(all_data["Email"].value_counts())
+            all_data = all_data.drop_duplicates(subset=["Email"], keep="first")
+
+            merged_data.append(all_data)
+
         # Merge all data into a single DataFrame
-        final_data = pd.concat(merged_data, ignore_index=True)
-        data_to_insert = final_data.to_dict(orient="records")
-        db[collection_name].insert_many(data_to_insert)
+        final_data = pd.concat(merged_data, ignore_index=True) if merged_data else pd.DataFrame()
+
+        if not final_data.empty:
+            data_to_insert = final_data.to_dict(orient="records")
+            db[collection_name].insert_many(data_to_insert)
 
         return jsonify({"message": "All files uploaded successfully"}), 200
 
