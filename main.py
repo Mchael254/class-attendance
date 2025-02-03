@@ -111,10 +111,9 @@ def upload_excel_files():
                         # df = df.dropna() 
                         df = df.dropna(how='all')
                         df = df.fillna('***') 
-                        # df = df.drop_duplicates(subset=["Email"], keep="first")
-                        # merged_data.append(df)
-                        if "Email" in df.columns:
-                            df["days"] = df.groupby("Email")["Email"].transform("count")
+                       # Count the number of times an email exists and record it as "days"
+                        df["days"] = df.groupby("Email")["Email"].transform("count")
+                        df = df.drop_duplicates(subset=["Email"], keep="first")
                         merged_data.append(df)
                         
                     # Scenario 2: Multiple sheets
